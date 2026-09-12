@@ -1,6 +1,6 @@
 # Practical guidelines
 
-These ten rules come directly from the "A concrete set of guidelines the team can adopt" section of the source report. The examples are generic, but the guidance is grounded in the cited teams.
+The first ten rules come from the "A concrete set of guidelines the team can adopt" section of the source report. Additional rules cite the implementation evidence that motivates them.
 
 ## 1. Pick the entity that owns ordering before writing code
 
@@ -166,3 +166,15 @@ type RoomState = { messages: Message[]; typing: string[]; workflowStatus: string
 // Good: one join point, separate surfaces.
 type Room = { stream: Stream; presence: Presence; workflow: AgentThread };
 ```
+
+## 11. Preserve user-action meaning across requests and refreshes
+
+Rule: sharing a transport primitive does not make user actions semantically interchangeable.
+
+Before wiring an asynchronous action, distinguish creating an effect, observing an existing effect, and retrying an uncertain attempt. State the user's requested outcome, what is already known, and the allowed visible transitions, including pending and final wording. Derive feedback and available actions from that intent and evidence. A function name or an in-flight HTTP request is not evidence that the user's operation has started again.
+
+Reuse request and receipt code below this boundary. An observational refresh must not replay a creation handler's UI transitions or erase confirmed progress without new authoritative evidence, even when the API uses an identical idempotent POST for both purposes. Idempotency prevents duplicate external effects; it does not prevent a shared callback from replaying misleading UI effects. Keep automatic receipt bookkeeping within the original user action unless another user decision is actually required. If completion was not yet confirmed, a failed observation leaves it unconfirmed; it does not establish that the underlying operation failed.
+
+Verify the sequence the user sees as well as the eventual external result. Hold or lose a completion response after the effect commits, then exercise refresh or recovery. Assert the permitted user actions, wording and progress styling at each transition, the retained operation identity, and the external effect count. Do not add an extra test click merely because the implementation offers a button. Extend the existing state model and test fixture; this rule does not require a new workflow framework or test harness.
+
+Evidence: Thinkering's [shared send/check handler](https://github.com/tejasdc/thinkering/blob/2bcbf21dc0dfbf4c98d0195add54778b07c8c749/apps/web/src/send-to-slack.tsx#L26) reset the UI to Sending during receipt checks; its [original test](https://github.com/tejasdc/thinkering/blob/2bcbf21dc0dfbf4c98d0195add54778b07c8c749/apps/web/tests/production/send-to-slack.spec.mjs#L54) accepted the second action. The [corrected regression](https://github.com/tejasdc/thinkering/blob/5763024e981f8cc30357e9dec43507e6b2f62bac/apps/web/tests/production/send-to-slack.spec.mjs#L53) requires automatic confirmation with no second button and preserves the original snapshot through later edits.

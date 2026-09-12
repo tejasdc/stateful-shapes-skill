@@ -36,7 +36,8 @@ Shape, not count. Teams reach for heavier primitives when the failure mode chang
 1. Identify the entity: room, session, workspace, document, payment, agent run, or similar.
 2. Identify the failure mode: races, lost messages, duplicate effects, merge conflicts, stale reads, or crash recovery gaps.
 3. Match to the shape or shapes. Multiple shapes often compose.
-4. Read the matching detail files and [guidelines](./guidelines.md), then choose the lightest tool that honestly solves the pressure.
+4. For user-visible workflows, define the requested effect, known facts, and visible transitions before wiring handlers; use [guideline 11](./guidelines.md#11-preserve-user-action-meaning-across-requests-and-refreshes).
+5. Read the matching detail files and [guidelines](./guidelines.md), then choose the lightest tool that honestly solves the pressure.
 
 ## Decision: when to adopt a library
 
@@ -44,7 +45,7 @@ Use [library-thresholds.md](./library-thresholds.md). Do not reach for XState be
 
 ## Guidelines
 
-See [guidelines.md](./guidelines.md) for the ten practical rules.
+See [guidelines.md](./guidelines.md) for the practical rules.
 
 ## Common mistakes
 
