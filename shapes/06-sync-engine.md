@@ -15,6 +15,26 @@ A sync-engine shape appears when the product promise depends on immediate local 
 
 The local graph stays usable immediately and converges later with authoritative state.
 
+## Content invalidation has its own boundary
+
+Replication activity and acknowledgements do not invalidate unchanged content.
+Separate content, receipt and transport-status notifications; retain stable content
+snapshots when their inputs have not changed. Coalesce redundant refreshes while
+retaining changes that arrive during an in-flight refresh, so the latest committed
+state eventually publishes. Keep existing causal readiness and immutable identity
+checks; reducing notifications must not conceal a real update.
+
+Measure work per no-change event and per changed record, including history scans,
+clones, projection and editor invalidation. Low request volume can still fan out
+into expensive local work. Preserve draft/undo ownership while view observation is
+inactive; browser network eligibility belongs to `pwa-that-doesnt-suck`.
+
+Source: Thinkering's September 14, 2026 audit measured twelve repository refreshes
+for one empty resync. The independent assessment found existing materialization
+and editor-update guards, so fixing notifications is smaller than replacing replay.
+[Repository boundary](https://github.com/tejasdc/thinkering/blob/ab5e85cb2ff455b00afb1682d74e640f4357a2e9/packages/adapters/src/browser-workspace.ts#L92),
+[stable external-store snapshots](https://react.dev/reference/react/useSyncExternalStore).
+
 ## Mental model, in teams' own words
 
 - Linear docs: "Linear automatically syncs all changes in realtime as they happen." Source: https://linear.app/docs/get-the-app
