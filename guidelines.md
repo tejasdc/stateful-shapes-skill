@@ -178,3 +178,24 @@ Reuse request and receipt code below this boundary. An observational refresh mus
 Verify the sequence the user sees as well as the eventual external result. Hold or lose a completion response after the effect commits, then exercise refresh or recovery. Assert the permitted user actions, wording and progress styling at each transition, the retained operation identity, and the external effect count. Do not add an extra test click merely because the implementation offers a button. Extend the existing state model and test fixture; this rule does not require a new workflow framework or test harness.
 
 Evidence: Thinkering's [shared send/check handler](https://github.com/tejasdc/thinkering/blob/2bcbf21dc0dfbf4c98d0195add54778b07c8c749/apps/web/src/send-to-slack.tsx#L26) reset the UI to Sending during receipt checks; its [original test](https://github.com/tejasdc/thinkering/blob/2bcbf21dc0dfbf4c98d0195add54778b07c8c749/apps/web/tests/production/send-to-slack.spec.mjs#L54) accepted the second action. The [corrected regression](https://github.com/tejasdc/thinkering/blob/5763024e981f8cc30357e9dec43507e6b2f62bac/apps/web/tests/production/send-to-slack.spec.mjs#L53) requires automatic confirmation with no second button and preserves the original snapshot through later edits.
+
+## 12. Make every read cost what changed, not how much history exists
+
+Rule: a change notification is a delta instruction, not a refresh signal.
+
+When a store emits change events that name the entity that changed, re-read that entity and merge it by identity. Read the whole collection only on first open, after a gap the events cannot account for (reconnect, cursor loss), or when an event names nothing the client holds. Event reads continue from their cursor and ask only for the kinds they use. A collection that grows forever and is refetched whole on every change is a defect even when each read is fast today, because its cost is proportional to history and its frequency to activity.
+
+Before adding any read, state three numbers: what it downloads for the largest real entity, how often it repeats, and whether that grows with history. If the owner offers no way to read one record or continue from a cursor, ask for it; do not budget around it with longer debounce or bigger caches. Windowing (paging a list that the client scans to derive status) is not the fix: it makes records outside the window render as confidently wrong states. Omitting large bodies reduces cost but still grows.
+
+Source: Thinkering's Inbox, 2026-09-17/18. The unread check re-read the whole event ledger from cursor 0 on every change (15.9 MB, 33 s per read), fixed by continuing from the cursor and filtering kinds (84 KB, 30 ms, [990cd04](https://github.com/tejasdc/thinkering/commit/990cd04)). The delivery-record list was refetched whole on every Inbox change (444 records, 2.7 MB, growing from 1.8 MB the day before), fixed by reading only the record an event names (7 ms, ~6 KB) with a full read only on open or gap ([42eab26](https://github.com/tejasdc/thinkering/commit/42eab26)). A proposed paged list was rejected because it would have shown routed requests as "never routed".
+
+```ts
+// Bad: any change refetches the whole, ever-growing list.
+onEvent(e => { if (e.operationId) receipts = await api.listReceipts(sessionId); });
+
+// Good: the event names what changed; read that one and merge by identity.
+onEvent(e => {
+  if (e.operationId && held) held = mergeById(held, [await api.getReceipt(e.operationId)]);
+  else markStale(sessionId); // first open or unexplained gap: one full read
+});
+```

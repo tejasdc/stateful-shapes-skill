@@ -56,3 +56,4 @@ See [guidelines.md](./guidelines.md) for the practical rules.
 - Retrying ambiguous operations without idempotency keys.
 - Assuming replicas can "just take the latest" without sequence or state-resolution rules.
 - Buying CRDT or OT complexity before there are concurrent editable shared objects.
+- Refetching a whole, growing collection whenever one item in it changes ([guideline 12](./guidelines.md#12-make-every-read-cost-what-changed-not-how-much-history-exists)).
