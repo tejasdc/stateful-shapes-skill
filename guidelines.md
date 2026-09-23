@@ -199,3 +199,19 @@ onEvent(e => {
   else markStale(sessionId); // first open or unexplained gap: one full read
 });
 ```
+
+## 13. Decide an obligation only by explicit signals, never by reading prose
+
+Rule: when one agent owes another an answer, the obligation closes only on a typed signal (a reply command with its disposition, a cancel, an execution failure), never on an interpretation of text.
+
+A handed-off request is a durable workflow with one open obligation. Define its states, the explicit signal that moves each one and who produces it before writing any close path. A turn ending, a message that sounds final, or silence are not signals; they are prose, and reading them turns every agent's phrasing into a way to lose work. Every wait must end somewhere explicit: the worker is running, or waits on something the system tracks, or it is woken once and then the requester is told it stalled. Nothing waits in silence and nothing is guessed. When a transport answers, record receipt only for the exact event the other side confirms it holds; a plain success is not custody. When an old inference already closed an obligation, let the worker's later explicit answer supersede it as a new event rather than discarding it.
+
+Incident: Concierge, 2026-09-23. The owner closed agent requests by reading a finished turn's closing text as the answer ("undetermined") or its silence as "unanswered": 63 requests in a week, 34 of them after the worker had said with `--partial` that it was not finished. One closed on "Final reply will follow"; six minutes later the worker's real final reply reached the owner, which discarded it and told the worker's machine it had arrived. The first fix reordered the checks so a partial reply was seen first; the correction was to delete the prose reading entirely and design the whole protocol (states, reminder, stalled notice, per-event acknowledgement). Tejas: *"Why can't the agent say this is his final reply? Why can't the agent use a CLI to respond and have parameters? Do you know about functions and determinism?"* and *"How do you guarantee a late final answer always comes back? … How long will you wait? What's the protocol there?"* Protocol: [request reply protocol](https://github.com/tejasdc/slack-concierge/blob/main/docs/plans/2026-09-23-request-reply-protocol.md).
+
+```ts
+// Bad: the turn ended, so treat its last words as the answer.
+if (turn.status === 'done') settle(request, 'undetermined', turn.text);
+
+// Good: only the worker's command closes it; an idle worker is reminded, then reported.
+if (turn.status === 'done' && !workerWillWake(worker)) remindOnceThenReportStalled(request);
+```

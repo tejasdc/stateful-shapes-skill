@@ -1,6 +1,6 @@
 ---
 name: stateful-shapes
-description: Use when designing or reviewing any stateful subsystem - chat, messaging, workflows, agent threads, collaborative documents, session management, lifecycle state, or any code where a state machine/FSM, status field, concurrency, ordering, races, mutation ownership, single writer, actor/coordinator, sync engine, idempotency, workflow framework, XState, Temporal, or Durable Objects might be relevant.
+description: Use when designing or reviewing any stateful subsystem - chat, messaging, workflows, agent threads, collaborative documents, session management, lifecycle state, or any code where a state machine/FSM, status field, concurrency, ordering, races, mutation ownership, single writer, actor/coordinator, sync engine, idempotency, workflow framework, XState, Temporal, or Durable Objects might be relevant. Also when an agent hands work to another agent and the answer never came back, a result was dropped, a request was closed because the agent said "final reply will follow", or anyone asks how long we wait on an agent and what the protocol is.
 ---
 
 # Stateful Shapes
