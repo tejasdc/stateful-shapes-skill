@@ -217,3 +217,35 @@ if (turn.status === 'done') settle(request, 'undetermined', turn.text);
 // Good: only the worker's command closes it; an idle worker is reminded, then reported.
 if (turn.status === 'done' && !workerWillWake(worker)) remindOnceThenReportStalled(request);
 ```
+
+## 14. Separate the lifetime of what does the work from the lifetime of what coordinates it
+
+Rule: the process you update often must not hold the lifetime of the process that must keep running.
+
+The seven shapes say who owns ordering and mutation; they say nothing about which OS process holds
+the pipes, and that is where Concierge broke. Every running agent was a child of the coordinator
+service, so the service could not restart without killing it; updates waited for an idle moment
+that a busy evening never produced, and the attempted fix held the user's own messages behind the
+longest-running agent. The shape was right (one coordinator per session, a durable turn); the
+lifetime was wrong. Anthropic's managed-agents team hit the same wall and moved the harness out of
+the sandbox container ("the harness leaves the container… If the container died, the harness
+caught the failure as a tool-call error", Readwise `01knr94a5xajcxkbz8jrpfpzmp`); Meta's XFaaS
+keeps controllers out of the execution path so "controller downtime for tens of minutes" is
+survivable (Readwise `01jfhj2z3p74rdfea1jjnffm5r`).
+
+We used this skill on 2026-10-07 to classify the Concierge design (shapes 3, 4 and 7 fit); with
+Astra we found the skill had no rule for the lifetime split that the whole problem turned on, so it
+is added here. Ask, for every long-running thing: which process holds its pipes, which supervisor
+kills it, what dies with it, and whether the thing you update most often is in that set. If it is,
+give the work its own supervised lifetime and let the coordinator reattach by identity and replay
+from a cursor. Design: slack-concierge
+`docs/plans/2026-10-07-agent-work-and-updates-without-waiting.md`.
+
+```ts
+// Bad: the coordinator spawns the worker; restarting the coordinator kills the work.
+const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'] });
+
+// Good: a separately supervised host owns the worker; the coordinator attaches by id.
+const host = await startExecutionHost(executionId, manifest);   // its own unit, survives us
+const stream = await host.attach({ afterSequence: ledger.cursor(executionId) });
+```
