@@ -15,6 +15,12 @@ A durable agent thread is a conversational or task execution that carries more t
 
 The unit of continuity is the thread or execution, not just the latest message.
 
+## Incident: a held group message was declared delivered before it was saved
+
+On 2026-10-13 Tejas rejected a confident explanation of his Cortex group chat failure: "Uh, get your thing reviewed by someone else here. Get a fresh pair of eyes, maybe a fable agent, to make sure we don't ever see any fucking cause issues here. for whatever reason, the tagging reason, whatever encryption you're talking about, because I don't understand what, I don't think you're explaining it to me correct or like you don't understand anything about what's going on. So I don't trust your judgment or whatever your fix here." The initial diagnosis correctly separated tag recognition from damaged model continuation data, but the first review of the release missed a separate custody gap. The group gateway moved untagged messages into a tagged turn and marked them handed off before the agent runtime durably saved that turn. On restart it deleted those rows. A crash between handoff and save could erase context. A fresh reviewer found the concrete path; the source repair changed restart recovery to reoffer uncertain messages, accepting that a crash after save may repeat context.
+
+For any chat or agent thread that moves context between stores, identify the exact durable acceptance point. A callback that starts a run, or a lease marked handed off, is not proof of acceptance. Review the producer, the destination's persistence boundary, restart settlement, and the user-visible reply boundary together. When the runtime offers no acceptance receipt, state the at-least-once or at-most-once tradeoff explicitly and choose against silent loss of human context. An archive is reference custody, not proof that the next model turn has loaded it. This rule applies independently of why a particular provider call failed.
+
 ## Mental model, in teams' own words
 
 - Anthropic: "How sessions persist agent conversation history, and when to use continue, resume, and fork." Source: https://code.claude.com/docs/en/agent-sdk/sessions
