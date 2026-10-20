@@ -249,3 +249,9 @@ const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'] });
 const host = await startExecutionHost(executionId, manifest);   // its own unit, survives us
 const stream = await host.attach({ afterSequence: ledger.cursor(executionId) });
 ```
+
+## 15. Merge progress by identity before aggregating
+
+Rule: when durable and provisional readings describe the same work, reconcile them for each entity first, then add the entities. For cumulative earned values, take the maximum known value per identity; never subtract an observed value from a total unless that total is guaranteed to include that very identity. Pending classification can keep an entity out of a list without erasing the fact it has earned progress. Check the whole transition from pending work through acknowledgement, sync and reload, not just the completed item.
+
+Incident: Thinkering's Journal countdown on 2026-10-20 fell from about 4:50 back to 5:00 every ten seconds during phone dictation. Voice time was saved on an empty journal shell while the day's aggregate excluded shells until transcription supplied words. The page subtracted the shell's observed credit from that aggregate, so each save erased the provisional gain. The prior Focus timer repair addressed a different balance; an October 18 Journal save-failure repair left this formula intact and checked neither countdown-through-dictation nor reload. The repair gives each entry one credit identity, merges observed and retained seconds with a maximum, then sums the entries once. Tejas: *"the timer is literally broken"* and *"How difficult is it to make a timer work?"* [Failure ledger and captured evidence](https://github.com/tejasdc/thinkering/blob/main/docs/retrospectives/agent-failure-ledger.md#journal-countdown-reset-at-each-save-during-phone-dictation-october-20-2026).
