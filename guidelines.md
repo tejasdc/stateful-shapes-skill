@@ -69,6 +69,8 @@ workflow.history.push({ step: 'charged_card', at: now });
 workflow.nextStep = 'send_receipt';
 ```
 
+Two consequences our own failures taught. Each run or attempt gets its own durable identity; a calendar date is not one. The lab's nightly run kept its state in a folder named for the date, so a manual run and the scheduled run the same day collided and the scheduled one skipped (agent-ecology `e9b6004`, October 16). And a status anyone can see is derived from the obligation or event that it describes, never written by hand: four Lab experts' "waiting for the trial brief" stayed on the roster for five days after the lab paused (agent-ecology `docs/retrospectives/2026-10-13-lab-committees-and-codiak.md`). Check: two runs on one date, and pause or finish followed by a refresh of every place the status shows.
+
 ## 5. Add idempotency at the boundary as soon as retries can duplicate effects
 
 Rule: ambiguous retries need operation identity.
@@ -100,6 +102,8 @@ session.state = nextState;
 // Good: all mutations pass through one keyed mailbox.
 await mailbox.dispatch(sessionId, () => sessionActor.apply(command));
 ```
+
+When two features legitimately write one record, one coordinator is not enough by itself: say which fields each writer owns, or how their versions merge, before either ships. On 2026-10-21 thnkr.ing's Journal writing-time save and an editor save prepared on an older copy committed on the same parent 116 ms apart; the editor refuses versions that differ in more than text, so the line silently stopped saving and surfaced later as "Two versions need your decision" ([failure ledger](https://github.com/tejasdc/thinkering/blob/main/docs/retrospectives/agent-failure-ledger.md)). Check: interleave both writers' saves on one parent and assert both fields survive.
 
 ## 7. If the product promise is instant local feel, invest in sync early
 
@@ -255,3 +259,29 @@ const stream = await host.attach({ afterSequence: ledger.cursor(executionId) });
 Rule: when durable and provisional readings describe the same work, reconcile them for each entity first, then add the entities. For cumulative earned values, take the maximum known value per identity; never subtract an observed value from a total unless that total is guaranteed to include that very identity. Pending classification can keep an entity out of a list without erasing the fact it has earned progress. Check the whole transition from pending work through acknowledgement, sync and reload, not just the completed item.
 
 Incident: Thinkering's Journal countdown on 2026-10-20 fell from about 4:50 back to 5:00 every ten seconds during phone dictation. Voice time was saved on an empty journal shell while the day's aggregate excluded shells until transcription supplied words. The page subtracted the shell's observed credit from that aggregate, so each save erased the provisional gain. The prior Focus timer repair addressed a different balance; an October 18 Journal save-failure repair left this formula intact and checked neither countdown-through-dictation nor reload. The repair gives each entry one credit identity, merges observed and retained seconds with a maximum, then sums the entries once. Tejas: *"the timer is literally broken"* and *"How difficult is it to make a timer work?"* [Failure ledger and captured evidence](https://github.com/tejasdc/thinkering/blob/main/docs/retrospectives/agent-failure-ledger.md#journal-countdown-reset-at-each-save-during-phone-dictation-october-20-2026).
+
+## 16. A success signal proves only what it measures
+
+Rule: before code settles, deletes or advances on a success signal, name the rung of the acceptance ladder that signal proves: recorded by us, admitted by the transport, saved durably by the receiver, or shown to the person. Settle only on the rung the obligation needs.
+
+This is the miss that repeated most often in sessions that had already loaded the skill, because the shapes name the right owner but not the moment custody moves. Cortex's SMS relay marked an idempotency key used when the relay accepted the message rather than when it was delivered, and needed a fix 71 minutes later (`4aa0bca3`, 2026-04-22). Its held group messages were first deleted before the agent runtime accepted them; the repair settled on dispatcher acceptance, and a restart then still erased context because "handed off" was recorded before the runtime saved the turn (`24f996f1`, then `22e962ed`, October 8–13). Concierge's queue claim checked that an update changed exactly one row; a trigger on that table made Bun report three, so every claim committed and then returned "no claim", and dispatch stopped silently with twelve of his captures waiting (slack-concierge `docs/incidents/2026-10-08-dispatch-hang-handoff.md`, fixed by reading SQLite's own count in `b0a2e31`).
+
+Check: inject a failure just after each rung (receiver crash after admission, response lost after the receiver saved, restart before display) and assert no loss and no second effect. Where a database count or a transport status guards custody, test it on the installed runtime and schema, triggers included.
+
+```ts
+// Bad: the transport said ok, so the work is done.
+if ((await relay.send(msg)).ok) await keys.markUsed(msg.key);
+
+// Good: settle on the rung the obligation needs, named by the receiver.
+const receipt = await relay.send(msg);            // admitted
+await keys.markPending(msg.key, receipt.id);
+onDelivered(receipt.id, () => keys.markUsed(msg.key)); // saved by the receiver
+```
+
+## 17. An older installed reader will meet every new record
+
+Rule: a new record kind, field or message format ships only with a check that a still-open older page, service worker or peer can read it or pass it through, keep its own pending writes, and report a typed incompatibility instead of stopping.
+
+Installed clients do not update together. On 2026-10-17 thnkr.ing's Lists release wrote one block with a new property; his already-open Mac page could not decode it, parked replication, and held 142 of his changes locally for an hour (`db48b70c` in release `5725ccff`; [failure ledger](https://github.com/tejasdc/thinkering/blob/main/docs/retrospectives/agent-failure-ledger.md#a-new-list-note-stopped-his-mac-pages-sync-for-an-hour-october-17-2026)). In August, chess-with-friends' push queue began requiring an acknowledgement that older installed service workers never sent, so friends saw stale notifications (`89aa02e`). The sync-engine shape names replicas but did not say that the oldest live reader is part of the contract.
+
+Check: run the previous release's decoder (or worker) against records the new release writes, before deploying. The decoder that refused the Lists record was found exactly that way, after the fact.

@@ -15,6 +15,8 @@ A sync-engine shape appears when the product promise depends on immediate local 
 
 The local graph stays usable immediately and converges later with authoritative state.
 
+Every replica includes the oldest build still open on one of his devices: a new record kind must be readable or passable by it, or sync stops there ([guideline 17](../guidelines.md#17-an-older-installed-reader-will-meet-every-new-record)).
+
 ## Content invalidation has its own boundary
 
 Replication activity and acknowledgements do not invalidate unchanged content.
