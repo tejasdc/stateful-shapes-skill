@@ -30,6 +30,8 @@ Put it in the design, the plan or the review. It is this skill's deliverable.
 7. **Failure trace** in five steps: before the effect, effect committed, response lost, refresh or restart, what the person sees.
 8. **One falsifying sequence and the check that runs it** (a test, a fault injection, an installed-build check). A card without a check is context, not prevention.
 
+For cross-machine withdrawal, trace two distinct facts: the origin accepted cancellation and the receiver revoked execution. A queued turn on a sleeping peer can stay unchanged while its origin is canceled, so the receiver must check the origin after reconnect or the origin must retry until revocation is acknowledged. Revoke unstarted work and its redundant cancellation instruction before an account reset can claim either; leave running work to its running cancellation path. A notification about waiting work also checks the exact live origin and receiver turn before delivery. The November 3 Concierge incident left an informational Mac consult and its cancellation instruction queued after its origin settled, while a usage push called it Tejas's message.
+
 ## The seven shapes
 
 | Shape | Where it occurs | Key invariant | Canonical team | Detail file |
