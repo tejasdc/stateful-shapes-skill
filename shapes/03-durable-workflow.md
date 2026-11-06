@@ -16,6 +16,12 @@ A durable workflow is a multi-step process whose progress must survive crashes, 
 
 Progress is durable and resumable, and external side effects are replay-safe or compensated.
 
+## Incident: usage reset while the Inbox stayed queued
+
+On November 6, 2026, Tejas saw available Codex usage after an external reset while his Inbox remained queued: *“the moment you see the usage is left, you need to update your state of the system. And that should start flowing the request in.”* The first theory was that Concierge did not poll CodexBar. It did poll both saved accounts every three minutes and read the reset account at 0% use. The actual defect was a retained refusal attached to that **inactive** account: the reader reconciled old refusals only for the active login, so the account switch still treated the saved account as unavailable. Claude had no proven usable login, so a provider handoff could not recover the queue either.
+
+When a workflow waits on external capacity, treat the fresh observation and every account-specific refusal that gates the next transition as one reconciliation boundary. Match the account and source time, retire only a refusal the new observation truly supersedes, then reevaluate the existing queued work and guarded switch. Do not clear unrelated refusal state or replay an accepted request. A periodic timer proves only that the read ran; it does not prove the waiting workflow was released. The [Concierge failure record](https://github.com/tejasdc/slack-concierge/blob/main/docs/incidents/2026-11-06-inactive-codex-reset-hidden-from-switch.md) contains the acceptance sequence; the Concierge reader and guarded switch enforce the transition.
+
 ## Mental model, in teams' own words
 
 - Temporal: "Workflow Executions are to distributed systems what transactions are to databases." Source: https://web.temporal.io/blog/workflow-introduction
