@@ -43,6 +43,11 @@ ordinary navigation, notification navigation, visibility return and full documen
 against the same retained progress before claiming the flow fixed. Exercise at least two units,
 interrupt after the first, then finish the last while an already-open second surface observes.
 Pictures of the next card and a stored completion are different evidence from that sequence.
+The marked checking entrance must wire the same change-announcement port as production: observe
+the actual announcement on the already-open page before crediting a passive update. An incidental
+opening or visibility reread can otherwise make missing stream wiring look like a pass. The same
+November 13 repair exposed exactly this omission in the isolated application composition; its
+existing deck watcher now supplies that port.
 
 On November 13, thnkr.ing's shortcut practice disappeared after one of two questions and returned
 around other work and notification taps. Tejas said: "please look at the every single flow map out
