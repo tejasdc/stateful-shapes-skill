@@ -1,6 +1,6 @@
 ---
 name: stateful-shapes
-description: Use when designing, changing or reviewing anything that keeps state over time - chat, messaging, queues, workflows, agent threads and handoffs, sync between devices or machines, session or lifecycle status, timers and progress, retries, single writer or actor/coordinator, state machine, XState, Temporal, Durable Objects or a sync engine - and when something stateful went wrong, in the words people use for it - "it got sent twice", "the answer never came back", "my requests are failing, not being processed and getting dropped", "my usage reset but everything is queued up", "final reply will follow", "the restart killed the work", "it says queued/waiting but it's done", "I already marked that task done, why is it not coming back to you", "who's there managing the whole thing?", "is the plan being operated on?", "the timer is literally broken", "How difficult is it to make a timer work?", "it jumps back after a save", "my change disappeared", "it shows as my message but I didn't write it", "the page stopped syncing after the update", "the notification went to the wrong account", "the scheduled run skipped", "why are we just telling the other machine your list may be out of date", "sync this across both machines", "design the protocol", "how long will you wait, what's the protocol there". Not for copy, styling or formatting changes.
+description: Use when designing, changing or reviewing anything that keeps state over time - chat, messaging, queues, workflows, agent threads and handoffs, sync between devices or machines, session or lifecycle status, timers and progress, retries, single writer or actor/coordinator, state machine, XState, Temporal, Durable Objects or a sync engine - and when something stateful went wrong, in the words people use for it - "it got sent twice", "the answer never came back", "my requests are failing, not being processed and getting dropped", "my usage reset but everything is queued up", "final reply will follow", "the restart killed the work", "it says queued/waiting but it's done", "I already marked that task done, why is it not coming back to you", "who's there managing the whole thing?", "is the plan being operated on?", "practice disappears and comes back", "supposed to ask me 2 questions", "the timer is literally broken", "How difficult is it to make a timer work?", "it jumps back after a save", "my change disappeared", "it shows as my message but I didn't write it", "the page stopped syncing after the update", "the notification went to the wrong account", "the scheduled run skipped", "why are we just telling the other machine your list may be out of date", "sync this across both machines", "design the protocol", "how long will you wait, what's the protocol there". Not for copy, styling or formatting changes.
 ---
 
 # Stateful Shapes
@@ -34,8 +34,6 @@ For cross-machine withdrawal, trace two distinct facts: the origin accepted canc
 
 For a to-do created on behalf of another continuing session, record that session as an interested destination and deliver a durable, idempotent status transition to it. Keep the first completion event distinct from a later review that repeats `done`; a repeated `done` must not rewrite the completion time. At the final boundary that produces a task-derived ask or attention item, current human completion must veto a repeat request even when no external receipt was saved; clear matching pending asks without clearing unrelated tasks. This veto must cover ordinary conversational follow-ups too, not only a structured attention list. A missing URL is an unavailable artifact, not proof that the human did not finish. In the November 2026 Diwali party, Tejas first marked the Spotify invite task done through a widget on November 2. The task stored only its creator's agent name, so no completion reached the party planner; two later reviews rewrote the displayed completion time, and the planner **then read `done` but discounted it** because no invite receipt was attached. Tejas asked, “when it's marked done, why the fuck are you … [with] 0 sense of situation awareness?” The Thinkering to-do builder owns transition delivery, first-completion preservation and the output veto; until those are installed, the originating planner must check the task owner before follow-ups.
 
-## The seven shapes
-
 ## A step's exit belongs to its completion rule, not its first child
 
 When a repeated activity has a variable number of units, derive Next versus Return from the
@@ -56,6 +54,8 @@ uncovered workspace with the server still at one of two. The repair owner must e
 rule in the shared review path and retain the full interruption/completion browser sequence;
 the exact notification path in Tejas's original incident remains unproved. Source: thnkr.ing
 capture 49b4bae6243427ce0128ee291ea12844b25e20377ac41895638358582b332e00, concierge:9650.
+
+## The seven shapes
 
 | Shape | Where it occurs | Key invariant | Canonical team | Detail file |
 | --- | --- | --- | --- | --- |
