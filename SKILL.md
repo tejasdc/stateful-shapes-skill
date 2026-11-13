@@ -36,6 +36,27 @@ For a to-do created on behalf of another continuing session, record that session
 
 ## The seven shapes
 
+## A step's exit belongs to its completion rule, not its first child
+
+When a repeated activity has a variable number of units, derive Next versus Return from the
+remaining units in the retained activity. Never give each card or child the activity's close
+callback as its advance callback. Keep explicit interruption separate from completion; map
+ordinary navigation, notification navigation, visibility return and full document replacement
+against the same retained progress before claiming the flow fixed. Exercise at least two units,
+interrupt after the first, then finish the last while an already-open second surface observes.
+Pictures of the next card and a stored completion are different evidence from that sequence.
+
+On November 13, thnkr.ing's shortcut practice disappeared after one of two questions and returned
+around other work and notification taps. Tejas said: "please look at the every single flow map out
+every single flow" and "they're supposed to ask me 2 questions." Earlier fixes excluded completed
+cards and keyboard-ineligible devices, but checked pictures rather than advancing through the
+step. A retained one-question return design still passed the whole review's close action to every
+card. The installed-build isolated browser reproduced a successful first press, Return, and an
+uncovered workspace with the server still at one of two. The repair owner must enforce the exit
+rule in the shared review path and retain the full interruption/completion browser sequence;
+the exact notification path in Tejas's original incident remains unproved. Source: thnkr.ing
+capture 49b4bae6243427ce0128ee291ea12844b25e20377ac41895638358582b332e00, concierge:9650.
+
 | Shape | Where it occurs | Key invariant | Canonical team | Detail file |
 | --- | --- | --- | --- | --- |
 | Ordered event stream per entity | Chat rooms, issue histories, payments | One authoritative ordering boundary per stream | Slack / Discord / Telegram | [01](./shapes/01-ordered-event-stream.md) |
